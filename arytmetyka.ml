@@ -113,7 +113,6 @@ let rec razy a b =
       max_lista [m a1 b1; m a1 b2; m a2 b1; m a2 b2])
   | Poza (a1, a2), x| x, Poza (a1, a2) ->
       let (l, p) = rozbij (Poza (a1, a2)) in
-      (*Printf.printf "ddd";*)
       polacz (razy l x) (razy p x);;
 
 let podzielic a b = razy a (odwroc b);;

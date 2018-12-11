@@ -34,7 +34,7 @@ let prostokat (x1, y1) (x2, y2) =
 let kolko (x1, y1) r =
   function (x, y) ->
     if dist_sq (x, y) (x1, y1) = infinity then
-      if dist_sq (1., 1.) (x1 /. x, y1 /. x) <=? 1. then 1 else 0
+      if dist_sq (1., 1.) (x1 /. x, y1 /. y) <=? 1. then 1 else 0
     else if dist_sq (x, y) (x1, y1) <=? r *. r then 1 else 0
 
 let zloz (x1, y1) (x2, y2) k =

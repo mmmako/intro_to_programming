@@ -1,3 +1,6 @@
+(* Autor: Michał Makowski
+Reviewer: Wojciech Kłopotek *)
+
 type point = float * float
 
 type kartka = point -> int
@@ -25,7 +28,8 @@ let cp (x1, y1) (x2, y2) = x1*.y2 -. x2*.y1
 let dist_sq (x1, y1) (x2, y2) = let d = (x2 -. x1, y2 -. y1) in dp d d
 
 let prostokat (x1, y1) (x2, y2) =
-  function (x, y) -> if x1 <=? x && x <=? x2 && y1 <=? y && y <=? y2 then 1 else 0
+  function (x, y) -> if x1 <=? x && x <=? x2 && y1 <=? y && y <=? y2 then 1
+                                                                     else 0
 
 let kolko (x1, y1) r =
   function (x, y) ->
@@ -40,7 +44,9 @@ let zloz (x1, y1) (x2, y2) k =
       k (x, y)
     else if rel < 0. then 0
     else (* rel > 0 *)
-      let s = dp (x -. x1, y -. y1) (x2 -. x1, y2 -. y1) /. dist_sq (x1, y1) (x2, y2) in
+      (* odbicie symetryczne (x, y) względem wektora od (x1, y1) do (x2, y2) *)
+      let sa = dp (x -. x1, y -. y1) (x2 -. x1, y2 -. y1) in
+      let s = sa /. dist_sq (x1, y1) (x2, y2) in
       k (-.x +. 2.*.x1 +. 2.*.(x2 -. x1)*.s, -.y +. 2.*.y1 +. 2.*.(y2 -. y1)*.s) + k (x, y)
 
 let skladaj l k = List.fold_left (fun a el -> zloz (fst el) (snd el) a) k l

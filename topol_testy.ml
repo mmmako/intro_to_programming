@@ -17,7 +17,7 @@ let polacz_posortowane l1 l2 =
       else pom t1 t2 (h1::a)
     |h::t, [] |[], h::t -> pom t [] (h::a)
     |[], [] -> a
-  in List.rev (pom l1 l2 []);;
+  in List.rev (pom l1 l2 [])
 
 (* sprawdza, czy lista jest poprawnym sortowaniem topologicznym grafu *)
 let sprawdz_wynik lista top =
@@ -72,6 +72,26 @@ testuj "prosta z pętlą na końcu" [("a", ["b"]); ("b", ["c"]); ("c", ["d"]); (
 testuj "małe drzewo binarne" [(0, [1; 2]); (1, [3; 4]); (2, [5; 6]); (3, [7; 8]); (4, [9; 10]); (5, [11; 12]); (6, [13; 14]); (7, []); (8, []); (9, []); (10, []); (11, []); (12, []); (13, []); (14, [])] false;;
 testuj "małe drzewo binarne - cykl" [(0, [1; 2]); (1, [3; 4]); (2, [5; 6]); (3, [7; 8]); (4, [9; 10]); (5, [11; 12]); (6, [13; 14]); (7, []); (8, []); (9, []); (10, []); (11, []); (12, []); (13, []); (14, [2])] true;;
 testuj "nie-cykl" [(0, [1; 2]); (1, [3]); (2, [3]); (3, [])] false;;
+testuj "niejawne wierzchołki" [(1, [2]); (4, [3])] false;;
+testuj "niejawne wierzchołki, cykl" [(1, [2]); (4, [3; 78]); (3, [4])] true;;
+testuj "wielokrotne wierzchołki" [(1, [2]); (2, [3]); (1, [3]); (3, [])] false;;
+testuj "wielokrotne wierzchołki, cykl" [(1, [2]); (2, [3]); (1, [3]); (3, [2])] true;;
+testuj "wielokrotne wierzchołki + niejawne" [(1, [2]); (1, [3])] false;;
+testuj "wielokrotne wierzchołki + niejawne, cykl" [(1, [2]); (1, [3]); (3, [1])] true;;
+testuj "kilka rozłącznych, ujemne" [(-1, [-2; -3]); (-2, [-3]); (-3, []); (-40, [-50]); (-50, [])] false;;
+testuj "kilka rozłącznych, ujemne, cykl" [(-1, [-2; -3]); (-2, [-3]); (-3, []); (-40, [-50]); (-50, [-60]); (-60, [-40])] true;;
+
 let drz = drzewo_binarne 12;;
 testuj "większe drzewo binarne" drz false;;
-testuj "niejawne wierzchołki" [(1, [2]); (1, [3])] false;;
+
+let duzo_malych n =
+  let odc k = [(k, [k + 1]); (k + 1, [])] in
+  let wynik = ref [] in
+  for i = 1 to n do
+    wynik := (odc (i*2 + 1)) @ !wynik
+  done;
+  !wynik;;
+
+let dm = duzo_malych 1000;;
+testuj "duzo małych" dm false;;
+testuj "duzo małych, cykl" ((2002, [2001])::dm) true;;

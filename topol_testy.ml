@@ -1,4 +1,7 @@
-open Topol
+(* #mod_use "/home/michal/wpf/topol/pMap.ml"
+#mod_use "/home/michal/wpf/topol/topol.ml"
+
+ *)open Topol
 
 let info =
   if Array.length Sys.argv = 2 && Sys.argv.(1) = "-info" then true else false
@@ -19,10 +22,13 @@ let polacz_posortowane l1 l2 =
     |[], [] -> a
   in List.rev (pom l1 l2 [])
 
+let wierzcholki gr =
+  let splaszcz l = List.fold_left (fun a (w, s) -> w::s@a) [] l in
+  gr |> splaszcz |> (List.sort compare) |> usun_dupl
+
 (* sprawdza, czy lista jest poprawnym sortowaniem topologicznym grafu *)
 let sprawdz_wynik lista top =
-  let wierzch = List.fold_left (fun a (w, l) -> w::l@a) [] lista in
-  let wierzch = usun_dupl (List.sort compare wierzch) in
+  let wierzch = wierzcholki lista in
   let wstaw (g, o) w = (PMap.add w [] g, PMap.add w 0 o) in
   let (graf, ozn) = List.fold_left wstaw (PMap.empty, PMap.empty) wierzch in
   let pom s (w, l) =
@@ -43,7 +49,7 @@ let testuj nazwa gr czyCykliczny =
   let t = Sys.time() in
   if info then Printf.printf "Test: \"%s\"" nazwa;
   let wynik = (try if (sprawdz_topol gr) then 1 else 0 with Cykliczne -> 2) in
-  if info then Printf.printf ", czas wykonania: %fs\n" (Sys.time() -. t);
+  if info then print_endline (", czas wykonania: " ^ string_of_float (Sys.time() -. t) ^ "s");
   if not ((wynik = 2 && czyCykliczny) || (wynik = 1 && not czyCykliczny)) then begin
     Printf.printf "Nieudany test \"%s\"\n" nazwa;
     assert false
@@ -95,3 +101,41 @@ let duzo_malych n =
 let dm = duzo_malych 1000;;
 testuj "duzo małych" dm false;;
 testuj "duzo małych, cykl" ((2002, [2001])::dm) true;;
+
+let polpelny n =
+  let l = ref [] in
+  let wynik = ref [] in
+  for i = 1 to n do
+    wynik := (i, !l)::!wynik;
+    l := i::!l
+  done;
+  !wynik;;
+ 
+
+let pol = polpelny 500;;
+testuj "średni półpełny" pol false;;
+testuj "średni półpełny, cykl" ((250, [420])::pol) true;;
+
+let stworz_rozlaczny l =
+  let przesun k l = List.rev (List.fold_left (fun a el -> el+k::a) [] l) in
+  let przesun_wierzch k ((w, l) : int * int list) = (w + k, przesun k l) in
+  let przesun_graf k (g : (int * int list) list) = List.fold_left (fun a el -> (przesun_wierzch k el)::a) [] g in
+  let pom (a, m) el =
+    if el <> [] then
+      let w = wierzcholki el in
+      let m = match m with
+        |None -> (List.hd w) + 1
+        |Some n -> n in
+      let mini = List.hd w in
+      let maks = List.hd (List.rev w) in
+      ((przesun_graf (m + 1 - mini) el)@a, Some (max (maks + m + 1 - mini) m))
+    else (a, m) in
+  fst (List.fold_left pom ([], None) l);;
+
+let skopiuj gr n =
+  let l = ref [] in
+  for i = 1 to n do l := gr::!l done;
+  stworz_rozlaczny !l;;
+
+let rozl = skopiuj (polpelny 30) 30;;
+testuj "kilka mniejszych polpelnych" rozl false;;
